@@ -15,12 +15,7 @@ def handle_can_data(cansock, socket_fds):
     for s in socket_fds:
         s.send(out.encode("ascii"))
 
-def handle_candapter_data(s, cansock):
-    rbuf = s.recv(1024)
-    if not rbuf:
-        socket_fds.remove(s)
-        return
-
+def handle_candapter_data(s, cansock, rbuf):
     msgs = [ x.strip() for x in rbuf.split(b'\r') ]
 
     for msg in msgs:
@@ -98,6 +93,11 @@ def main():
         else:
             for s in socket_fds:
                 if s in rfds:
-                    handle_candapter_data(s, cansock)
+                    rbuf = s.recv(1024)
+                    if not rbuf:
+                        socket_fds.remove(s)
+                        continue
+
+                    handle_candapter_data(s, cansock, rbuf)
 
 main()
